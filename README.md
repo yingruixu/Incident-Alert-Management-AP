@@ -31,54 +31,69 @@ Incident and Alert are modeled as separate domains to reflect real-world operati
 - Docker & Docker Compose
 - Maven
 
-### Run with Docker
-
-1. Start MySQL using Docker Compose:
-
-```bash
+How to Run Locally
+1. Start MySQL with Docker
 docker compose up -d mysql
 
-./mvnw spring-boot:run
 
-curl http://localhost:8080/health
+MySQL configuration:
 
+Database: incidentdb
 
----
+User: incident_user
 
-### 🧑‍💻 Run Locally (Without Docker)
+Password: incident_pass
 
-```md
-### Run Locally
+Port: 3306
 
-1. Start a local MySQL instance and create a database:
+Database tables are created automatically by Spring Boot JPA
+(ddl-auto=update).
 
-```sql
-CREATE DATABASE incidentdb;
-
-2. Update database configuration in application.yml.
-
-3. Run the application:
+2. Run the Application
 ./mvnw spring-boot:run
 
 
-```md
-## API Examples
+Or run IncidentApplication directly in IntelliJ IDEA.
 
-### Create Alert
-
-```bash
-curl -X POST http://localhost:8080/alerts \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source": "prometheus",
-    "message": "CPU usage > 90%",
-    "severity": "P1"
-  }'
+3. Health Check
+GET http://localhost:8080/health
 
 
-### List Alerts
+Response:
 
-curl http://localhost:8080/alerts
+OK
+
+API Examples
+Create Incident
+POST /incidents
+Content-Type: application/json
+
+{
+  "title": "Database connection failure",
+  "severity": "P1"
+}
+
+Get All Incidents
+GET /incidents
+
+Get Incident by ID
+GET /incidents/{id}
+
+Close Incident
+POST /incidents/{id}/close
+
+Create Alert
+POST /alerts
+Content-Type: application/json
+
+{
+  "source": "Prometheus",
+  "message": "CPU usage exceeds threshold",
+  "severity": "P2"
+}
+
+Get All Alerts
+GET /alerts
 
 
 
