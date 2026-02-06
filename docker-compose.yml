@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  mysql:
+    image: mysql:8
+    container_name: incident-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: incidentdb
+    ports:
+      - "3306:3306"
