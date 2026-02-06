@@ -31,54 +31,34 @@ Incident and Alert are modeled as separate domains to reflect real-world operati
 - Docker & Docker Compose
 - Maven
 
-### Run with Docker
+## How to Run Locally
 
-1. Start MySQL using Docker Compose:
+### 1. Start MySQL with Docker
 
-```bash
-docker compose up -d mysql
+1. Make sure Docker is running
+2. Start MySQL container
 
-./mvnw spring-boot:run
+   docker compose up -d mysql
 
-curl http://localhost:8080/health
+Database configuration:
 
+- Database: incidentdb
+- User: incident_user
+- Password: incident_pass
+- Port: 3306
+
+Tables will be created automatically by Spring Boot JPA.
 
 ---
 
-### 🧑‍💻 Run Locally (Without Docker)
+### 2. Run the Application
 
-```md
-### Run Locally
+1. Start Spring Boot application
 
-1. Start a local MySQL instance and create a database:
+   ./mvnw spring-boot:run
 
-```sql
-CREATE DATABASE incidentdb;
+2. Or run `IncidentApplication` in IntelliJ IDEA
 
-2. Update database configuration in application.yml.
+---
 
-3. Run the application:
-./mvnw spring-boot:run
-
-
-```md
-## API Examples
-
-### Create Alert
-
-```bash
-curl -X POST http://localhost:8080/alerts \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source": "prometheus",
-    "message": "CPU usage > 90%",
-    "severity": "P1"
-  }'
-
-
-### List Alerts
-
-curl http://localhost:8080/alerts
-
-
-
+###
