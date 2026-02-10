@@ -5,13 +5,13 @@ import jakarta.validation.constraints.NotBlank;
 
 public class CreateAlertRequest {
 
-    @NotBlank
+    @NotBlank(message = "source must not be blank")
     private String source;
 
-    @NotBlank
+    @NotBlank(message = "message must not be blank")
     private String message;
 
-    @NotBlank
+    @NotBlank(message = "severity must not be blank")
     private String severity;
 
     public String getSource() {

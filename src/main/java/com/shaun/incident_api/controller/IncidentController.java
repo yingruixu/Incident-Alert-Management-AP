@@ -1,7 +1,12 @@
 package com.shaun.incident_api.controller;
 
+import com.shaun.incident_api.DTO.CreateIncidentRequest;
 import com.shaun.incident_api.entity.Incident;
+import com.shaun.incident_api.entity.IncidentStatus;
+import com.shaun.incident_api.exception.ResourceNotFoundException;
 import com.shaun.incident_api.repository.IncidentRepository;
+import com.shaun.incident_api.service.IncidentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,63 +25,47 @@ public class IncidentController {
 
     @Autowired
     private IncidentRepository incidentRepository;
+    private final IncidentService incidentService;
+
+    public IncidentController(IncidentService incidentService) {
+        this.incidentService = incidentService;
+    }
+
 
     // GET /incidents
     @GetMapping
     public List<Incident> getAllIncidents() {
-        return incidentRepository.findAll();
+        return incidentService.getAll();
     }
 
     // GET /incidents/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Incident> getIncidentById(@PathVariable Long id) {
-        return incidentRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public Incident getIncidentById(@PathVariable Long id) {
+        return incidentService.getById(id);
     }
 
     // POST /incidents
     @PostMapping
-    public Incident createIncident(@RequestBody Incident incident) {
-        return incidentRepository.save(incident);
+    public Incident createIncident(@Valid @RequestBody CreateIncidentRequest request) {
+        return incidentService.create(request);
     }
 
     // PATCH /incidents/{id}?status=CLOSED
     @PatchMapping("/{id}")
-    public ResponseEntity<Incident> updateStatus(
+    public Incident updateStatus(
             @PathVariable Long id,
-            @RequestParam String status) {
+            @RequestParam IncidentStatus status) {
 
-        return incidentRepository.findById(id).map(incident -> {
-            incident.setStatus(status);
-            incidentRepository.save(incident);
-            return ResponseEntity.ok(incident);
-        }).orElse(ResponseEntity.notFound().build());
+        return incidentService.updateStatus(id, status);
     }
 
-    //Close incident day > 7
-    @Scheduled(cron = "0 0 1 * * ?")
-//    @Scheduled(fixedRate = 10000) // 每10秒执行一次
-    public void closeOldIncidents() {
-        List<Incident> openIncidents = incidentRepository.findAll()
-                .stream()
-                .filter(i -> i.getStatus().equals("OPEN") &&
-                        i.getCreatedAt().isBefore(LocalDateTime.now().minusDays(7)))
-                .toList();
-
-        for (Incident i : openIncidents) {
-            i.setStatus("CLOSED");
-        }
-
-        incidentRepository.saveAll(openIncidents);
-        System.out.println("Auto-closed " + openIncidents.size() + " incidents");
-    }
-
+    // GET /incidents/paged?page=0&size=10
     @GetMapping("/paged")
     public Page<Incident> getIncidentsPaged(
             @RequestParam int page,
             @RequestParam int size) {
-        return incidentRepository.findAll(PageRequest.of(page, size));
+
+        return incidentService.getPaged(PageRequest.of(page, size));
     }
 
 }

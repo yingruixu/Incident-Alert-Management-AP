@@ -1,6 +1,7 @@
 package com.shaun.incident_api.entity;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,12 +13,17 @@ public class Incident {
     private Long id;
 
     private String title;
-    private String severity; // P1~P4
-    private String status; // OPEN/CLOSED
+
+    @Enumerated(EnumType.STRING)
+    private Severity severity;
+
+    @Enumerated(EnumType.STRING)
+    private IncidentStatus status;
+
     private LocalDateTime createdAt;
 
     public Incident() {
-        this.status = "OPEN";
+        this.status = IncidentStatus.OPEN;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -28,11 +34,11 @@ public class Incident {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public String getSeverity() { return severity; }
-    public void setSeverity(String severity) { this.severity = severity; }
+    public String getSeverity() { return severity.toString(); }
+    public void setSeverity(Severity severity) { this.severity = severity; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public IncidentStatus getStatus() { return status; }
+    public void setStatus(IncidentStatus status) { this.status = status; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
