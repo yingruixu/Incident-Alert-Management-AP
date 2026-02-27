@@ -4,8 +4,12 @@ import com.shaun.incident_api.DTO.CreateIncidentRequest;
 import com.shaun.incident_api.entity.Incident;
 import com.shaun.incident_api.entity.IncidentStatus;
 import com.shaun.incident_api.exception.ResourceNotFoundException;
+import com.shaun.incident_api.metrics.IncidentMetrics;
 import com.shaun.incident_api.repository.IncidentRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,10 +22,21 @@ import java.util.List;
 @Service
 public class IncidentService {
 
-    private final IncidentRepository incidentRepository;
 
-    public IncidentService(IncidentRepository incidentRepository) {
+
+    private final IncidentRepository incidentRepository;
+    private final IncidentMetrics incidentMetrics;
+
+    public IncidentService(IncidentRepository incidentRepository, IncidentMetrics incidentMetrics) {
         this.incidentRepository = incidentRepository;
+        this.incidentMetrics = incidentMetrics;
+//        updateMetricsAndAlert();
+    }
+
+    @PostConstruct
+    public void init() {
+        log.info("IncidentService initialized, updating metrics...");
+        updateMetricsAndAlert();
     }
 
     public Incident create(CreateIncidentRequest request) {
@@ -71,5 +86,16 @@ public class IncidentService {
         incidentRepository.saveAll(openIncidents);
 
         log.info("Auto-closed {} incidents", openIncidents.size());
+    }
+
+    private void updateMetricsAndAlert() {
+        int openCount = incidentRepository.countByStatus(IncidentStatus.OPEN);
+        incidentMetrics.updateOpenIncidentCount(openCount);
+
+
+        if (openCount > 20) {
+            log.warn("ALERT: Open incidents exceed 20! Current count: {}", openCount);
+
+        }
     }
 }

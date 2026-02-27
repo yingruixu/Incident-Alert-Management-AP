@@ -3,7 +3,11 @@ package com.shaun.incident_api.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "incident")
 public class Incident {
@@ -21,25 +25,12 @@ public class Incident {
     private IncidentStatus status;
 
     private LocalDateTime createdAt;
+    private LocalDateTime lastUpdated;
 
     public Incident() {
         this.status = IncidentStatus.OPEN;
         this.createdAt = LocalDateTime.now();
+        this.lastUpdated = LocalDateTime.now();
     }
 
-    // Getters & Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getSeverity() { return severity.toString(); }
-    public void setSeverity(Severity severity) { this.severity = severity; }
-
-    public IncidentStatus getStatus() { return status; }
-    public void setStatus(IncidentStatus status) { this.status = status; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

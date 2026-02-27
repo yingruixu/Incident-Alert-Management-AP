@@ -1,0 +1,30 @@
+package com.shaun.incident_api.entity;
+
+import jakarta.persistence.*;
+
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "users")
+public class AppUser {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
+
+    // 例：ROLE_ADMIN / ROLE_USER
+    @Column(nullable = false)
+    private String role;
+
+}
+
