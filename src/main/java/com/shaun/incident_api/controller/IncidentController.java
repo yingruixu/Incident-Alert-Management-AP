@@ -9,6 +9,7 @@ import com.shaun.incident_api.service.IncidentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -44,13 +45,15 @@ public class IncidentController {
         return incidentService.getById(id);
     }
 
-    // POST /incidents
+    // Only ADMIN can create
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public Incident createIncident(@Valid @RequestBody CreateIncidentRequest request) {
         return incidentService.create(request);
     }
 
-    // PATCH /incidents/{id}?status=CLOSED
+    // Only ADMIN can update status
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public Incident updateStatus(
             @PathVariable Long id,

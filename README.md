@@ -53,9 +53,10 @@ Tables will be created automatically by Spring Boot JPA.
 
 ### 2. Run the Application
 
-1. Start Spring Boot application
+1. Start Spring Boot application using docker
 
-   ./mvnw spring-boot:run
+    mvn clean package -DskipTests   
+    docker compose up -d
 
 2. Or run `IncidentApplication` in IntelliJ IDEA
 
