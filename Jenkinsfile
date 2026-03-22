@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'built-in' }
+    agent any
 
     environment {
         DOCKER_IMAGE = 'incident-api'
