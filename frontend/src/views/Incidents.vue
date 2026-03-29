@@ -18,31 +18,35 @@ import { incidentsApi } from '../api'
           </el-input>
 
           <el-select v-model="filterStatus" placeholder="Status" clearable style="margin-left: 10px">
-            <el-option label="Open" value="open" />
-            <el-option label="In Progress" value="in_progress" />
-            <el-option label="Resolved" value="resolved" />
-            <el-option label="Closed" value="closed" />
+            <el-option label="Open" value="OPEN" />
+            <el-option label="Closed" value="CLOSED" />
           </el-select>
 
           <el-select v-model="filterSeverity" placeholder="Severity" clearable style="margin-left: 10px">
-            <el-option label="Critical" value="critical" />
-            <el-option label="High" value="high" />
-            <el-option label="Medium" value="medium" />
-            <el-option label="Low" value="low" />
+            <el-option label="P0 - Critical" value="P0" />
+            <el-option label="P1 - High" value="P1" />
+            <el-option label="P2 - Medium" value="P2" />
+            <el-option label="P3 - Low" value="P3" />
+            <el-option label="P4 - Lowest" value="P4" />
           </el-select>
         </el-col>
 
         <el-col :span="6" style="text-align: right">
-          <el-button type="primary" @click="dialogVisible = true">
+          <el-button type="primary" @click="openNewDialog">
             ➕ New Incident
           </el-button>
         </el-col>
       </el-row>
     </el-card>
 
+    <!-- 加载状态 -->
+    <div v-if="loading" style="text-align:center; padding:40px">
+      <el-icon class="is-loading" style="font-size: 32px"><Loading /></el-icon>
+    </div>
+
     <!-- 事件列表表格 -->
-    <el-card style="margin-top: 20px">
-      <el-table :data="filteredIncidents" style="width: 100%">
+    <el-card v-else style="margin-top: 20px">
+      <el-table :data="filteredIncidents" style="width: 100%" v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
 
         <el-table-column prop="title" label="Title" min-width="200">
@@ -53,97 +57,86 @@ import { incidentsApi } from '../api'
           </template>
         </el-table-column>
 
-        <el-table-column prop="severity" label="Severity" width="120">
+        <el-table-column prop="severity" label="Severity" width="100">
           <template #default="{ row }">
             <el-tag :type="getSeverityType(row.severity)">
-              {{ row.severity.toUpperCase() }}
+              {{ row.severity }}
             </el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column prop="status" label="Status" width="120">
+        <el-table-column prop="status" label="Status" width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">
-              {{ formatStatus(row.status) }}
+              {{ row.status }}
             </el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column prop="service" label="Service" width="150" />
-
-        <el-table-column prop="created_at" label="Created" width="180">
+        <el-table-column prop="createdAt" label="Created" width="160">
           <template #default="{ row }">
-            {{ formatDate(row.created_at) }}
+            {{ formatDate(row.createdAt) }}
           </template>
         </el-table-column>
 
-        <el-table-column label="Actions" width="150">
+        <el-table-column label="Actions" width="200">
           <template #default="{ row }">
-            <el-button size="small" @click="editIncident(row)">Edit</el-button>
+            <el-button size="small" @click="openEditDialog(row)">Edit</el-button>
+            <el-button size="small" type="warning" @click="toggleStatus(row)" v-if="row.status === 'OPEN'">
+              Resolve
+            </el-button>
             <el-button size="small" type="danger" @click="deleteIncident(row)">
               Delete
             </el-button>
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- 空状态 -->
+      <el-empty v-if="!filteredIncidents.length" description="No incidents found" />
     </el-card>
 
     <!-- 新建/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
       :title="isEdit ? 'Edit Incident' : 'New Incident'"
-      width="600px"
+      width="500px"
     >
-      <el-form :model="form" label-width="120px">
-        <el-form-item label="Title">
+      <el-form :model="form" label-width="120px" ref="formRef">
+        <el-form-item label="Title" required>
           <el-input v-model="form.title" placeholder="Incident title" />
+        </el-form-item>
+
+        <el-form-item label="Severity" required>
+          <el-select v-model="form.severity" placeholder="Select severity" style="width: 100%">
+            <el-option label="P0 - Critical" value="P0" />
+            <el-option label="P1 - High" value="P1" />
+            <el-option label="P2 - Medium" value="P2" />
+            <el-option label="P3 - Low" value="P3" />
+            <el-option label="P4 - Lowest" value="P4" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="Status" v-if="isEdit">
+          <el-select v-model="form.status" style="width: 100%">
+            <el-option label="Open" value="OPEN" />
+            <el-option label="Closed" value="CLOSED" />
+          </el-select>
         </el-form-item>
 
         <el-form-item label="Description">
           <el-input
             v-model="form.description"
             type="textarea"
-            :rows="4"
-            placeholder="What happened?"
+            :rows="3"
+            placeholder="What happened? (optional)"
           />
-        </el-form-item>
-
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="Severity">
-              <el-select v-model="form.severity" style="width: 100%">
-                <el-option label="Critical" value="critical" />
-                <el-option label="High" value="high" />
-                <el-option label="Medium" value="medium" />
-                <el-option label="Low" value="low" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="12">
-            <el-form-item label="Status">
-              <el-select v-model="form.status" style="width: 100%">
-                <el-option label="Open" value="open" />
-                <el-option label="In Progress" value="in_progress" />
-                <el-option label="Resolved" value="resolved" />
-                <el-option label="Closed" value="closed" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-form-item label="Service">
-          <el-input v-model="form.service" placeholder="e.g., payment-api" />
-        </el-form-item>
-
-        <el-form-item label="Assignee">
-          <el-input v-model="form.assignee" placeholder="Who is handling this?" />
         </el-form-item>
       </el-form>
 
       <template #footer>
         <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="saveIncident">
+        <el-button type="primary" :loading="saving" @click="saveIncident">
           {{ isEdit ? 'Update' : 'Create' }}
         </el-button>
       </template>
@@ -152,8 +145,10 @@ import { incidentsApi } from '../api'
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Loading } from '@element-plus/icons-vue'
+import { incidentsApi } from '../api'
 
 // ===== 响应式数据 =====
 const search = ref('')
@@ -161,42 +156,42 @@ const filterStatus = ref('')
 const filterSeverity = ref('')
 const dialogVisible = ref(false)
 const isEdit = ref(false)
+const saving = ref(false)
+const loading = ref(false)
 
 const incidents = ref([])
 
-// 页面加载时获取数据
+const form = ref({
+  id: null,
+  title: '',
+  description: '',
+  severity: 'P2',
+  status: 'OPEN'
+})
+
+// ===== 页面加载时获取数据 =====
 onMounted(() => {
   loadIncidents()
 })
 
 async function loadIncidents() {
+  loading.value = true
   try {
-    const res = await incidentsApi.getAll()
-    incidents.value = res
+    const data = await incidentsApi.getAll()
+    incidents.value = data || []
   } catch (error) {
-    console.error('Failed to load:', error)
+    console.error('Failed to load incidents:', error)
     ElMessage.error('Failed to load incidents')
+  } finally {
+    loading.value = false
   }
 }
 
-// 表单数据
-const form = ref({
-  id: null,
-  title: '',
-  description: '',
-  severity: 'medium',
-  status: 'open',
-  service: '',
-  assignee: ''
-})
-
 // ===== 计算属性 =====
-// 根据搜索和过滤条件筛选事件
 const filteredIncidents = computed(() => {
   return incidents.value.filter(item => {
     const matchSearch = !search.value ||
-      item.title.toLowerCase().includes(search.value.toLowerCase()) ||
-      item.service.toLowerCase().includes(search.value.toLowerCase())
+      item.title?.toLowerCase().includes(search.value.toLowerCase())
 
     const matchStatus = !filterStatus.value || item.status === filterStatus.value
     const matchSeverity = !filterSeverity.value || item.severity === filterSeverity.value
@@ -207,77 +202,110 @@ const filteredIncidents = computed(() => {
 
 // ===== 方法 =====
 
-// 严重程度标签颜色
 function getSeverityType(severity) {
-  const map = {
-    critical: 'danger',
-    high: 'warning',
-    medium: 'info',
-    low: 'success'
-  }
+  const map = { P0: 'danger', P1: 'warning', P2: 'info', P3: 'success', P4: '' }
   return map[severity] || 'info'
 }
 
-// 状态标签颜色
 function getStatusType(status) {
-  const map = {
-    open: 'danger',
-    in_progress: 'warning',
-    resolved: 'success',
-    closed: 'info'
-  }
+  const map = { OPEN: 'danger', CLOSED: 'success' }
   return map[status] || 'info'
 }
 
-// 格式化状态显示
-function formatStatus(status) {
-  const map = {
-    open: 'Open',
-    in_progress: 'In Progress',
-    resolved: 'Resolved',
-    closed: 'Closed'
-  }
-  return map[status] || status
-}
-
-// 格式化日期
 function formatDate(dateStr) {
-  const date = new Date(dateStr)
-  return date.toLocaleString()
+  if (!dateStr) return '-'
+  return new Date(dateStr).toLocaleString('en-US', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit'
+  })
 }
 
-// 新建事件
-function editIncident(row) {
-  isEdit.value = true
-  form.value = { ...row }
+function openNewDialog() {
+  isEdit.value = false
+  form.value = { id: null, title: '', description: '', severity: 'P2', status: 'OPEN' }
   dialogVisible.value = true
 }
 
-// 查看详情
-function viewDetail(row) {
-  ElMessageBox.alert(row.description, row.title)
+function openEditDialog(row) {
+  isEdit.value = true
+  form.value = {
+    id: row.id,
+    title: row.title || '',
+    description: row.description || '',
+    severity: row.severity || 'P2',
+    status: row.status || 'OPEN'
+  }
+  dialogVisible.value = true
 }
 
-// 保存事件
+function viewDetail(row) {
+  const msg = row.description
+    ? `<b>${row.title}</b><br/><br/>${row.description}<br/><br/>Severity: ${row.severity} | Status: ${row.status}`
+    : `<b>${row.title}</b><br/><br/>Severity: ${row.severity} | Status: ${row.status}<br/>Created: ${formatDate(row.createdAt)}`
+  ElMessageBox.alert(msg, 'Incident Detail', {
+    dangerouslyUseHTMLString: true,
+    confirmButtonText: 'OK'
+  })
+}
+
 async function saveIncident() {
+  if (!form.value.title || !form.value.severity) {
+    ElMessage.warning('Title and Severity are required')
+    return
+  }
+
+  saving.value = true
   try {
     if (isEdit.value) {
-      await incidentsApi.update(form.value.id, form.value)
+      await incidentsApi.update(form.value.id, {
+        title: form.value.title,
+        description: form.value.description,
+        severity: form.value.severity,
+        status: form.value.status
+      })
     } else {
-      await incidentsApi.create(form.value)
+      await incidentsApi.create({
+        title: form.value.title,
+        description: form.value.description,
+        severity: form.value.severity
+      })
     }
-    await loadIncidents()
     dialogVisible.value = false
-    ElMessage.success('Saved!')
+    await loadIncidents()
+    ElMessage.success(isEdit.value ? 'Updated!' : 'Created!')
   } catch (error) {
-    ElMessage.error('Failed to save')
+    console.error('Save failed:', error)
+    ElMessage.error(error?.response?.data || 'Failed to save')
+  } finally {
+    saving.value = false
   }
 }
 
-// 删除事件
+async function toggleStatus(row) {
+  try {
+    await ElMessageBox.confirm(
+      `Mark incident "${row.title}" as CLOSED?`,
+      'Resolve Incident',
+      { type: 'warning' }
+    )
+    // PATCH /incidents/{id}/status?status=CLOSED
+    await incidentsApi.update(row.id, { status: 'CLOSED' })
+    await loadIncidents()
+    ElMessage.success('Incident resolved')
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('Failed to update status')
+    }
+  }
+}
+
 async function deleteIncident(row) {
   try {
-    await ElMessageBox.confirm('Delete this incident?', 'Warning', { type: 'warning' })
+    await ElMessageBox.confirm(
+      `Delete incident "${row.title}"?`,
+      'Warning',
+      { type: 'warning' }
+    )
     await incidentsApi.delete(row.id)
     await loadIncidents()
     ElMessage.success('Deleted')

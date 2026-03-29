@@ -13,53 +13,66 @@ real-world operational workflows such as monitoring alerts, incident tracking, a
 - Maven
 
 ## Architecture
++---------------- Frontend (Vue 3) ----------------+
+|  Dashboard - Incidents - Alerts - Monitoring      |
++------------------------+---------------------------+
+| HTTP + JWT Auth
++------------------------v---------------------------+
+|              Backend (Spring Boot 3)              |
+|            REST API - Validation - JPA            |
++------------------------+---------------------------+
+|
++------------------------v---------------------------+
+|                       MySQL 8                      |
+|              incidentdb - alertdb                 |
++--------------------------------------------------+
 
-The application follows a layered architecture:
++-------------+      +-------------+      +-------------+
+| Prometheus  |      |   Grafana   |      | Vite Dev    |
+|  Metrics    |      | Dashboards  |      |  Server     |
++-------------+      +-------------+      +-------------+
+# Features
+Module	Description
+Dashboard	Real-time stats cards + line chart (incident trend) + doughnut chart (severity distribution)
+Incidents	Full CRUD, search, filter by status/severity, status timeline
+Alerts	Alert rule management with enable/disable, metric thresholds
+Monitoring	Infrastructure health: CPU / Memory / Disk per service, color-coded progress bars
+Settings	User profile, role management (Admin / SRE / Developer / Viewer), timezone
+Auth	JWT-based login, route guard, token refresh
+Tech Stack
+Layer	Technology
+Frontend	Vue 3 + Vite + Element Plus + Chart.js + Pinia + Vue Router
+Backend	Java 17 + Spring Boot 3 + Spring Data JPA
+Database	MySQL 8
+Monitoring	Prometheus (metrics) + Grafana (dashboards)
+Container	Docker Compose
+Getting Started
+Option 1 -- Run with Docker (recommended)
+# Build and start all services
+mvn clean package -DskipTests
+docker compose up -d
 
-- Controller: Handles HTTP requests and validation
-- Service: Contains business logic
-- Repository: Data access layer using Spring Data JPA
-- Entity: Domain models mapped to database tables
+# Access points
+http://localhost:3001        # Frontend (login required)
+http://localhost:8080        # Backend API
+http://localhost:9090        # Prometheus
+http://localhost:3000        # Grafana
 
-Incident and Alert are modeled as separate domains to reflect real-world operational systems.
+# Project Structure
+frontend/
++-- src/
+|   +-- api/              # Axios API layer
+|   +-- views/            # Page components
+|   |   +-- Login.vue     # JWT auth
+|   |   +-- Dashboard.vue # Stats + charts
+|   |   +-- Incidents.vue # Incident CRUD
+|   |   +-- Alerts.vue    # Alert rules
+|   |   +-- Monitoring.vue# Infra health
+|   |   +-- Settings.vue  # User config
+|   +-- router/           # Vue Router + auth guards
 
-## Getting Started
-
-### Prerequisites
-
-- Java 17+
-- Docker & Docker Compose
-- Maven
-
-## How to Run Locally
-
-### 1. Start MySQL with Docker
-
-1. Make sure Docker is running
-2. Start MySQL container
-
-   docker compose up -d mysql
-
-Database configuration:
-
-- Database: incidentdb
-- User: incident_user
-- Password: incident_pass
-- Port: 3306
-
-Tables will be created automatically by Spring Boot JPA.
-
----
-
-### 2. Run the Application
-
-1. Start Spring Boot application using docker
-
-    mvn clean package -DskipTests   
-    docker compose up -d
-
-2. Or run `IncidentApplication` in IntelliJ IDEA
-
----
-
-###
+backend/
++-- controller/           # REST controllers
++-- service/              # Business logic
++-- repository/           # JPA repositories
++-- entity/              # Domain models
