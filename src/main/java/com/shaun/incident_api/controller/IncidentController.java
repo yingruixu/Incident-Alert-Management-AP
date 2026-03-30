@@ -1,6 +1,7 @@
 package com.shaun.incident_api.controller;
 
 import com.shaun.incident_api.DTO.CreateIncidentRequest;
+import com.shaun.incident_api.DTO.UpdateIncidentRequest;
 import com.shaun.incident_api.entity.Incident;
 import com.shaun.incident_api.entity.IncidentStatus;
 import com.shaun.incident_api.exception.ResourceNotFoundException;
@@ -69,6 +70,22 @@ public class IncidentController {
             @RequestParam int size) {
 
         return incidentService.getPaged(PageRequest.of(page, size));
+    }
+
+    // PUT /incidents/{id}
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public Incident updateIncident(
+            @PathVariable Long id,
+            @RequestBody UpdateIncidentRequest request) {
+        return incidentService.update(id, request);
+    }
+
+    // DELETE /incidents/{id}
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public void deleteIncident(@PathVariable Long id) {
+        incidentService.delete(id);
     }
 
 }

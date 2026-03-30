@@ -1,3 +1,6 @@
+import { ref, computed, onMounted } from 'vue'
+import { incidentsApi } from '../api'
+
 <template>
   <div class="dashboard">
     <!-- 统计卡片 -->
@@ -45,17 +48,31 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Chart, registerables } from 'chart.js'
+import { incidentsApi } from '../api'
 Chart.register(...registerables)
 const trendChartRef = ref(null)
 const severityChartRef = ref(null)
 const statsData = ref([
-  { icon: '🔴', value: 12, label: 'Open Incidents', color: '#409eff' },
-  { icon: '🟢', value: 8, label: 'Closed Today', color: '#67c23a' },
+  { icon: '🔴', value: 0, label: 'Open Incidents', color: '#409eff' },
+  { icon: '🟢', value: 0, label: 'Closed Today', color: '#67c23a' },
   { icon: '⚠️', value: 24, label: 'Active Alerts', color: '#e6a23c' },
   { icon: '🔥', value: '2.5h', label: 'Avg Resolution', color: '#f56c6c' }
 ])
+
+async function loadStats() {
+  try {
+    const incidents = await incidentsApi.getAll()
+    console.log('incidents:', incidents)
+    const openCount = incidents.filter(i => i.status === 'OPEN').length
+    statsData.value[0].value = openCount
+  } catch (e) {
+    console.error('Failed to load stats:', e)
+  }
+}
+
 onMounted(() => {
-  initCharts()
+    loadStats()
+    initCharts()
 })
 function initCharts() {
   // 趋势图

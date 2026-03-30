@@ -1,6 +1,7 @@
 package com.shaun.incident_api.service;
 
 import com.shaun.incident_api.DTO.CreateIncidentRequest;
+import com.shaun.incident_api.DTO.UpdateIncidentRequest;
 import com.shaun.incident_api.entity.Incident;
 import com.shaun.incident_api.entity.IncidentStatus;
 import com.shaun.incident_api.exception.ResourceNotFoundException;
@@ -97,5 +98,27 @@ public class IncidentService {
             log.warn("ALERT: Open incidents exceed 20! Current count: {}", openCount);
 
         }
+    }
+
+    // Update full incident
+    public Incident update(Long id, UpdateIncidentRequest request) {
+        Incident incident = getById(id);
+        if (request.getTitle() != null) {
+            incident.setTitle(request.getTitle());
+        }
+        if (request.getSeverity() != null) {
+            incident.setSeverity(request.getSeverity());
+        }
+        if (request.getStatus() != null) {
+            incident.setStatus(request.getStatus());
+        }
+        incident.setLastUpdated(LocalDateTime.now());
+        return incidentRepository.save(incident);
+    }
+
+    // Delete incident
+    public void delete(Long id) {
+        Incident incident = getById(id);
+        incidentRepository.delete(incident);
     }
 }
