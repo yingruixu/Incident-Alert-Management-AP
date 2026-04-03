@@ -13,6 +13,7 @@ real-world operational workflows such as monitoring alerts, incident tracking, a
 - Maven
 
 ## Architecture
+```text
 +---------------- Frontend (Vue 3) ----------------+
 |  Dashboard - Incidents - Alerts - Monitoring      |
 +------------------------+---------------------------+
@@ -31,6 +32,7 @@ real-world operational workflows such as monitoring alerts, incident tracking, a
 | Prometheus  |      |   Grafana   |      | Vite Dev    |
 |  Metrics    |      | Dashboards  |      |  Server     |
 +-------------+      +-------------+      +-------------+
+```
 # Features
 Module	Description
 Dashboard	Real-time stats cards + line chart (incident trend) + doughnut chart (severity distribution)
@@ -59,6 +61,7 @@ http://localhost:9090        # Prometheus
 http://localhost:3000        # Grafana
 
 # Project Structure
+```text
 frontend/
 +-- src/
 |   +-- api/              # Axios API layer
@@ -76,3 +79,4 @@ backend/
 +-- service/              # Business logic
 +-- repository/           # JPA repositories
 +-- entity/              # Domain models
+```
