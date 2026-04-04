@@ -34,6 +34,7 @@ real-world operational workflows such as monitoring alerts, incident tracking, a
 +-------------+      +-------------+      +-------------+
 ```
 # Features
+```text
 Module	Description
 Dashboard	Real-time stats cards + line chart (incident trend) + doughnut chart (severity distribution)
 Incidents	Full CRUD, search, filter by status/severity, status timeline
@@ -48,10 +49,10 @@ Backend	Java 17 + Spring Boot 3 + Spring Data JPA
 Database	MySQL 8
 Monitoring	Prometheus (metrics) + Grafana (dashboards)
 Container	Docker Compose
-Getting Started
-Option 1 -- Run with Docker (recommended)
+```
 # Build and start all services
 mvn clean package -DskipTests
+
 docker compose up -d
 
 # Access points
