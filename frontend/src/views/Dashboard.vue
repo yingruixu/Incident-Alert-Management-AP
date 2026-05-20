@@ -62,7 +62,6 @@ const statsData = ref([
 async function loadStats() {
   try {
     const incidents = await incidentsApi.getAll()
-    console.log('incidents:', incidents)
     const openCount = incidents.filter(i => i.status === 'OPEN').length
     statsData.value[0].value = openCount
   } catch (e) {

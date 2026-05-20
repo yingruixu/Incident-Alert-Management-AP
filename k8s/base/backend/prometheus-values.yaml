@@ -1,0 +1,24 @@
+global:
+  security:
+    allowInsecureImages: true # skip container image verification
+
+server:
+  global:
+    scrape_interval: 15s
+    evaluation_interval: 15s
+  image:
+    registry: docker.io
+    repository: prom/prometheus
+    tag: latest
+    pullPolicy: IfNotPresent
+  extraScrapeConfigs:
+    - job_name: 'incident-backend'
+      metrics_path: '/actuator/prometheus'
+      basic_auth:
+        username: prometheus
+        password: prometheus
+      static_configs:
+        - targets:
+            - 'backend.incident.svc.cluster.local:8080'
+alertmanager:
+  enabled: false

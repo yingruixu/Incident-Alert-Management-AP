@@ -27,7 +27,7 @@ public class JwtUtil {
     @PostConstruct
     public void init() {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        log.info("JWT secret used: {}", secret);
+
     }
 
     // valid 1 hour
