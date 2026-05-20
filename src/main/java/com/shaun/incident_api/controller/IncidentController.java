@@ -6,6 +6,7 @@ import com.shaun.incident_api.entity.Incident;
 import com.shaun.incident_api.entity.IncidentStatus;
 import com.shaun.incident_api.exception.ResourceNotFoundException;
 import com.shaun.incident_api.repository.IncidentRepository;
+import com.shaun.incident_api.security.JwtUtil;
 import com.shaun.incident_api.service.IncidentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/incidents")
 public class IncidentController {
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Autowired
     private IncidentRepository incidentRepository;

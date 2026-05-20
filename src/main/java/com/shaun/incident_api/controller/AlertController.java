@@ -12,6 +12,7 @@ import java.util.List;
 @RequestMapping("/alerts")
 public class AlertController {
 
+
     private final AlertService alertService;
 
     public AlertController(AlertService alertService) {
